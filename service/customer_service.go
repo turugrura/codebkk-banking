@@ -2,9 +2,9 @@ package service
 
 import (
 	"database/sql"
-	"errors"
-	"log"
 
+	"github.com/turugrura/codebkk-banking/errs"
+	"github.com/turugrura/codebkk-banking/logs"
 	"github.com/turugrura/codebkk-banking/repository"
 )
 
@@ -19,8 +19,8 @@ func NewCustomerService(repo repository.CustomerRepository) CustomerService {
 func (s customerService) GetCustomers() ([]CustomerResponse, error) {
 	customers, err := s.custRepo.GetAll()
 	if err != nil {
-		log.Println(err)
-		return nil, err
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
 	}
 
 	custResponses := []CustomerResponse{}
@@ -39,11 +39,11 @@ func (s customerService) GetCustomer(id int) (*CustomerResponse, error) {
 	customer, err := s.custRepo.GetById(id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("customer not found")
+			return nil, errs.NewNotfoundError("customer not found")
 		}
 
-		log.Println(err)
-		return nil, err
+		logs.Error(err)
+		return nil, errs.NewUnexpectedError()
 	}
 
 	custResponse := CustomerResponse{

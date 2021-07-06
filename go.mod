@@ -23,5 +23,8 @@ require (
 	github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2 // indirect
 	github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77 // indirect
 	go.etcd.io/bbolt v1.3.2 // indirect
+	go.uber.org/atomic v1.8.0 // indirect
+	go.uber.org/multierr v1.7.0 // indirect
+	go.uber.org/zap v1.18.1 // indirect
 	gopkg.in/resty.v1 v1.12.0 // indirect
 )

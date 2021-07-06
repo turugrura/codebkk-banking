@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/spf13/viper"
 	"github.com/turugrura/codebkk-banking/handler"
+	"github.com/turugrura/codebkk-banking/logs"
 	"github.com/turugrura/codebkk-banking/repository"
 	"github.com/turugrura/codebkk-banking/service"
 
@@ -22,18 +23,25 @@ func main() {
 	db := initDatabase()
 
 	custRepo := repository.NewCustomerRepositoryDB(db)
-	custRepoMock := repository.NewCustomerRepositoryMock()
-	_ = custRepoMock
+	// custRepoMock := repository.NewCustomerRepositoryMock()
+	// _ = custRepoMock
 	custService := service.NewCustomerService(custRepo)
 	custHandler := handler.NewCustomerHandler(custService)
+
+	accRepo := repository.NewAccountRepositoryDB(db)
+	accService := service.NewAccountService(accRepo)
+	accHandler := handler.NewAccountHandler(accService)
 
 	router := mux.NewRouter()
 
 	router.HandleFunc("/customers", custHandler.GetCustomers).Methods(http.MethodGet)
 	router.HandleFunc("/customers/{customerId:[0-9]+}", custHandler.GetCustomer).Methods(http.MethodGet)
 
+	router.HandleFunc("/customers/{customerID:[0-9]+}/accounts", accHandler.GetAccounts).Methods(http.MethodGet)
+	router.HandleFunc("/customers/{customerID:[0-9]+}/accounts", accHandler.NewAccount).Methods(http.MethodPost)
+
 	addr := fmt.Sprintf(":%v", viper.GetString("app.port"))
-	fmt.Printf("Starting at port %v\n", addr)
+	logs.Info("Starting at port " + addr)
 	http.ListenAndServe(addr, router)
 }
 
