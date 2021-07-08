@@ -17,7 +17,7 @@ func NewCustomerHandler(custSrv service.CustomerService) customerHandler {
 func (h customerHandler) GetCustomers(c *fiber.Ctx) error {
 	customers, err := h.custService.GetCustomers()
 	if err != nil {
-		return handleError(c, err)
+		return fiberError(err)
 	}
 
 	c.JSON(customers)
@@ -33,7 +33,7 @@ func (h customerHandler) GetCustomer(c *fiber.Ctx) error {
 
 	customer, err := h.custService.GetCustomer(customerId)
 	if err != nil {
-		return handleError(c, err)
+		return fiberError(err)
 	}
 
 	c.JSON(customer)

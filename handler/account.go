@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/turugrura/codebkk-banking/errs"
 	"github.com/turugrura/codebkk-banking/logs"
@@ -37,10 +35,10 @@ func (h accountHandler) NewAccount(c *fiber.Ctx) error {
 	accRes, err := h.accService.NewAccount(customerId, request)
 	if err != nil {
 		logs.Error(err)
-		return handleError(c, err)
+		return fiberError(err)
 	}
 
-	c.Response().Header.SetStatusCode(http.StatusCreated)
+	c.Response().Header.SetStatusCode(fiber.StatusCreated)
 	c.JSON(accRes)
 
 	return nil
@@ -55,7 +53,7 @@ func (h accountHandler) GetAccounts(c *fiber.Ctx) error {
 	accResponses, err := h.accService.GetAccounts(customerId)
 	if err != nil {
 		logs.Error(err)
-		return handleError(c, err)
+		return fiberError(err)
 	}
 
 	c.JSON(accResponses)
