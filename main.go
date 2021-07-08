@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/spf13/viper"
 	"github.com/turugrura/codebkk-banking/handler"
 	"github.com/turugrura/codebkk-banking/repository"
@@ -32,11 +34,30 @@ func main() {
 
 	app := fiber.New()
 
-	app.Get("/customers", custHandler.GetCustomers)
-	app.Get("/customers/:customerID", custHandler.GetCustomer)
+	app.Use(cors.New())
+	app.Use(logger.New(logger.Config{
+		TimeZone: time.Local.String(),
+	}))
 
-	app.Get("/customers/:customerID/accounts", accHandler.GetAccounts)
-	app.Post("/customers/:customerID/accounts", accHandler.NewAccount)
+	customerGroup := app.Group("/customers")
+	customerGroup.Get("/", custHandler.GetCustomers)
+	customerGroup.Get("/:customerID", custHandler.GetCustomer)
+
+	customerGroup.Get("/:customerID/accounts", accHandler.GetAccounts)
+	customerGroup.Post("/:customerID/accounts", accHandler.NewAccount)
+
+	app.Get("/env", func(c *fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"BaseURL":     c.BaseURL(),
+			"Hostname":    c.Hostname(),
+			"IP":          c.IP(),
+			"IPs":         c.IPs(),
+			"OriginalURL": c.OriginalURL(),
+			"Path":        c.Path(),
+			"Protocal":    c.Protocol(),
+			"Subdomains":  c.Subdomains(),
+		})
+	})
 
 	addr := fmt.Sprintf(":%v", viper.GetString("app.port"))
 	app.Listen(addr)
