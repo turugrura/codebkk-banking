@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/viper"
 	"github.com/turugrura/codebkk-banking/handler"
-	"github.com/turugrura/codebkk-banking/logs"
 	"github.com/turugrura/codebkk-banking/repository"
 	"github.com/turugrura/codebkk-banking/service"
 
@@ -32,17 +30,16 @@ func main() {
 	accService := service.NewAccountService(accRepo)
 	accHandler := handler.NewAccountHandler(accService)
 
-	router := mux.NewRouter()
+	app := fiber.New()
 
-	router.HandleFunc("/customers", custHandler.GetCustomers).Methods(http.MethodGet)
-	router.HandleFunc("/customers/{customerId:[0-9]+}", custHandler.GetCustomer).Methods(http.MethodGet)
+	app.Get("/customers", custHandler.GetCustomers)
+	app.Get("/customers/:customerID", custHandler.GetCustomer)
 
-	router.HandleFunc("/customers/{customerID:[0-9]+}/accounts", accHandler.GetAccounts).Methods(http.MethodGet)
-	router.HandleFunc("/customers/{customerID:[0-9]+}/accounts", accHandler.NewAccount).Methods(http.MethodPost)
+	app.Get("/customers/:customerID/accounts", accHandler.GetAccounts)
+	app.Post("/customers/:customerID/accounts", accHandler.NewAccount)
 
 	addr := fmt.Sprintf(":%v", viper.GetString("app.port"))
-	logs.Info("Starting at port " + addr)
-	http.ListenAndServe(addr, router)
+	app.Listen(addr)
 }
 
 func initConfig() {

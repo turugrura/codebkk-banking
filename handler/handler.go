@@ -1,19 +1,19 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/turugrura/codebkk-banking/errs"
 )
 
-func handleError(w http.ResponseWriter, err error) {
+func handleError(c *fiber.Ctx, err error) error {
 	switch v := err.(type) {
 	case errs.AppError:
-		w.WriteHeader(v.Code)
-		fmt.Fprintln(w, v.Message)
+		c.Response().Header.SetStatusCode(v.Code)
 	case error:
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprintln(w, v)
+		c.Response().Header.SetStatusCode(http.StatusInternalServerError)
 	}
+
+	return err
 }

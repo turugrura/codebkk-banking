@@ -1,11 +1,9 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
-	"strconv"
 
-	"github.com/gorilla/mux"
+	"github.com/gofiber/fiber/v2"
 	"github.com/turugrura/codebkk-banking/errs"
 	"github.com/turugrura/codebkk-banking/logs"
 	"github.com/turugrura/codebkk-banking/service"
@@ -19,42 +17,48 @@ func NewAccountHandler(accService service.AccountService) accountHandler {
 	return accountHandler{accService: accService}
 }
 
-func (h accountHandler) NewAccount(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("content-type") != "application/json" {
-		handleError(w, errs.NewValidationError("request body incorect format"))
-		return
+func (h accountHandler) NewAccount(c *fiber.Ctx) error {
+	if string(c.Request().Header.ContentType()) != "application/json" {
+		return errs.NewValidationError("request body incorect format")
 	}
 
 	request := service.NewAccountRequest{}
-	err := json.NewDecoder(r.Body).Decode(&request)
+	err := c.BodyParser(&request)
 	if err != nil {
 		logs.Error(err)
-		handleError(w, errs.NewValidationError("request body incorect format"))
-		return
+		return errs.NewValidationError("request body incorect format")
 	}
 
-	customerId, _ := strconv.Atoi(mux.Vars(r)["customerID"])
+	customerId, err := c.ParamsInt("customerID")
+	if err != nil {
+		return errs.NewValidationError("customerID should be integer")
+	}
+
 	accRes, err := h.accService.NewAccount(customerId, request)
 	if err != nil {
 		logs.Error(err)
-		handleError(w, err)
-		return
+		return handleError(c, err)
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	w.Header().Set("content-type", "application/json")
-	json.NewEncoder(w).Encode(accRes)
+	c.Response().Header.SetStatusCode(http.StatusCreated)
+	c.JSON(accRes)
+
+	return nil
 }
 
-func (h accountHandler) GetAccounts(w http.ResponseWriter, r *http.Request) {
-	customerId, _ := strconv.Atoi(mux.Vars(r)["customerID"])
-	accs, err := h.accService.GetAccounts(customerId)
+func (h accountHandler) GetAccounts(c *fiber.Ctx) error {
+	customerId, err := c.ParamsInt("customerID")
 	if err != nil {
-		logs.Error(err)
-		handleError(w, err)
-		return
+		return errs.NewValidationError("customerID should be integer")
 	}
 
-	w.Header().Set("content-type", "application/json")
-	json.NewEncoder(w).Encode(accs)
+	accResponses, err := h.accService.GetAccounts(customerId)
+	if err != nil {
+		logs.Error(err)
+		return handleError(c, err)
+	}
+
+	c.JSON(accResponses)
+
+	return nil
 }
