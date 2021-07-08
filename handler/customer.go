@@ -28,7 +28,7 @@ func (h customerHandler) GetCustomers(c *fiber.Ctx) error {
 func (h customerHandler) GetCustomer(c *fiber.Ctx) error {
 	customerId, err := c.ParamsInt("customerID")
 	if err != nil {
-		return errs.NewValidationError("customerID should be integer")
+		return fiberError(errs.NewValidationError("customerID should be integer"))
 	}
 
 	customer, err := h.custService.GetCustomer(customerId)

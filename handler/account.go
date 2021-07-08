@@ -17,19 +17,19 @@ func NewAccountHandler(accService service.AccountService) accountHandler {
 
 func (h accountHandler) NewAccount(c *fiber.Ctx) error {
 	if string(c.Request().Header.ContentType()) != "application/json" {
-		return errs.NewValidationError("request body incorect format")
+		return fiberError(errs.NewValidationError("request body incorect format"))
 	}
 
 	request := service.NewAccountRequest{}
 	err := c.BodyParser(&request)
 	if err != nil {
 		logs.Error(err)
-		return errs.NewValidationError("request body incorect format")
+		return fiberError(errs.NewValidationError("request body incorect format"))
 	}
 
 	customerId, err := c.ParamsInt("customerID")
 	if err != nil {
-		return errs.NewValidationError("customerID should be integer")
+		return fiberError(errs.NewValidationError("customerID should be integer"))
 	}
 
 	accRes, err := h.accService.NewAccount(customerId, request)
@@ -47,7 +47,7 @@ func (h accountHandler) NewAccount(c *fiber.Ctx) error {
 func (h accountHandler) GetAccounts(c *fiber.Ctx) error {
 	customerId, err := c.ParamsInt("customerID")
 	if err != nil {
-		return errs.NewValidationError("customerID should be integer")
+		return fiberError(errs.NewValidationError("customerID should be integer"))
 	}
 
 	accResponses, err := h.accService.GetAccounts(customerId)
