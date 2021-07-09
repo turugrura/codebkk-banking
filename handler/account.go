@@ -16,7 +16,7 @@ func NewAccountHandler(accService service.AccountService) accountHandler {
 }
 
 func (h accountHandler) NewAccount(c *fiber.Ctx) error {
-	if c.Is("json") {
+	if !c.Is("json") {
 		return fiberError(errs.NewValidationError("request body incorect format"))
 	}
 

@@ -32,4 +32,6 @@ require (
 	go.uber.org/zap v1.18.1 // indirect
 	golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c // indirect
 	gopkg.in/resty.v1 v1.12.0 // indirect
+	gorm.io/driver/sqlserver v1.0.7 // indirect
+	gorm.io/gorm v1.21.11 // indirect
 )

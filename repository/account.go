@@ -1,7 +1,8 @@
 package repository
 
 type Account struct {
-	AccountID   int     `db:"account_id"`
+	AccountID int `db:"account_id" gorm:"primaryKey;autoIncrement"`
+	Customer
 	CustomerID  int     `db:"customer_id"`
 	OpeningDate string  `db:"opening_date"`
 	AccountType string  `db:"account_type"`

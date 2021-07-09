@@ -49,6 +49,7 @@ func (s accountService) NewAccount(customerID int, request NewAccountRequest) (*
 
 	return response, nil
 }
+
 func (s accountService) GetAccounts(customerID int) ([]AccountResponse, error) {
 	accounts, err := s.accRepo.GetAll(customerID)
 	if err != nil {

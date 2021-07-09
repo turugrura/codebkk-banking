@@ -1,34 +1,46 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
 
+	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/jmoiron/sqlx"
 	"github.com/spf13/viper"
 	"github.com/turugrura/codebkk-banking/handler"
 	"github.com/turugrura/codebkk-banking/repository"
 	"github.com/turugrura/codebkk-banking/service"
-
-	_ "github.com/denisenkom/go-mssqldb"
-	"github.com/jmoiron/sqlx"
+	"gorm.io/driver/sqlserver"
+	"gorm.io/gorm"
+	gormLogger "gorm.io/gorm/logger"
 )
+
+type SqlLogger struct {
+	gormLogger.Interface
+}
+
+func (s SqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql string, rowsAffected int64), err error) {
+	sql, _ := fc()
+	fmt.Printf("%v\n", sql)
+}
 
 func main() {
 	initTimeZone()
 	initConfig()
-	db := initDatabase()
+	db := initDatabaseGorm()
 
-	custRepo := repository.NewCustomerRepositoryDB(db)
+	custRepo := repository.NewCustomerRepositoryGorm(db)
 	// custRepoMock := repository.NewCustomerRepositoryMock()
 	// _ = custRepoMock
 	custService := service.NewCustomerService(custRepo)
 	custHandler := handler.NewCustomerHandler(custService)
 
-	accRepo := repository.NewAccountRepositoryDB(db)
+	accRepo := repository.NewAccountRepositoryGorm(db)
 	accService := service.NewAccountService(accRepo)
 	accHandler := handler.NewAccountHandler(accService)
 
@@ -85,7 +97,7 @@ func initTimeZone() {
 	time.Local = ict
 }
 
-func initDatabase() *sqlx.DB {
+func initDatabaseSqlx() *sqlx.DB {
 	dsn := fmt.Sprintf("server=%v;user id=%v;password=%v;database=%v;",
 		viper.GetString("db.server"),
 		viper.GetString("db.username"),
@@ -102,9 +114,31 @@ func initDatabase() *sqlx.DB {
 		panic(err)
 	}
 
-	db.SetConnMaxLifetime(3 * time.Minute)
-	db.SetMaxOpenConns(5)
-	db.SetMaxOpenConns(5)
+	return db
+}
+
+func initDatabaseGorm() *gorm.DB {
+	dsn := fmt.Sprintf("server=%v;user id=%v;password=%v;database=%v;",
+		viper.GetString("db.server"),
+		viper.GetString("db.username"),
+		viper.GetString("db.password"),
+		viper.GetString("db.database"),
+	)
+
+	db, err := gorm.Open(sqlserver.Open(dsn))
+	if err != nil {
+		panic(err)
+	}
+
+	// if err = db.Ping(); err != nil {
+	// 	panic(err)
+	// }
+
+	// db.SetConnMaxLifetime(3 * time.Minute)
+	// db.SetMaxOpenConns(5)
+	// db.SetMaxOpenConns(5)
+
+	db.AutoMigrate(repository.Customer{}, repository.Account{})
 
 	return db
 }

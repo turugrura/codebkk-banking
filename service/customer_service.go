@@ -1,11 +1,10 @@
 package service
 
 import (
-	"database/sql"
-
 	"github.com/turugrura/codebkk-banking/errs"
 	"github.com/turugrura/codebkk-banking/logs"
 	"github.com/turugrura/codebkk-banking/repository"
+	"gorm.io/gorm"
 )
 
 type customerService struct {
@@ -38,7 +37,7 @@ func (s customerService) GetCustomers() ([]CustomerResponse, error) {
 func (s customerService) GetCustomer(id int) (*CustomerResponse, error) {
 	customer, err := s.custRepo.GetById(id)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if err == gorm.ErrRecordNotFound {
 			return nil, errs.NewNotfoundError("customer not found")
 		}
 
