@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -51,6 +52,10 @@ func main() {
 		TimeZone: time.Local.String(),
 	}))
 
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello")
+	})
+
 	customerGroup := app.Group("/customers")
 	customerGroup.Get("/", custHandler.GetCustomers)
 	customerGroup.Get("/:customerID", custHandler.GetCustomer)
@@ -71,7 +76,11 @@ func main() {
 		})
 	})
 
-	addr := fmt.Sprintf(":%v", viper.GetString("app.port"))
+	port := viper.GetString("app.port")
+	if port == "0" {
+		port = os.Getenv("PORT")
+	}
+	addr := fmt.Sprintf(":%v", port)
 	app.Listen(addr)
 }
 
