@@ -32,16 +32,16 @@ func (s SqlLogger) Trace(ctx context.Context, begin time.Time, fc func() (sql st
 func main() {
 	initTimeZone()
 	initConfig()
-	db := initDatabaseGorm()
+	// db := initDatabaseGorm()
 
-	custRepo := repository.NewCustomerRepositoryGorm(db)
-	// custRepoMock := repository.NewCustomerRepositoryMock()
-	// _ = custRepoMock
-	custService := service.NewCustomerService(custRepo)
+	// custRepo := repository.NewCustomerRepositoryGorm(db)
+	custRepoMock := repository.NewCustomerRepositoryMock()
+	custService := service.NewCustomerService(custRepoMock)
 	custHandler := handler.NewCustomerHandler(custService)
 
-	accRepo := repository.NewAccountRepositoryGorm(db)
-	accService := service.NewAccountService(accRepo)
+	// accRepo := repository.NewAccountRepositoryGorm(db)
+	accRepoMock := repository.NewAccountRepositoryMock()
+	accService := service.NewAccountService(accRepoMock)
 	accHandler := handler.NewAccountHandler(accService)
 
 	app := fiber.New()
